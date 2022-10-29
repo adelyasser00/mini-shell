@@ -150,7 +150,11 @@ Command::execute()
     int inFd,outFd,errFd;
 
     if(_inputFile){
+<<<<<<< HEAD
         inFd = open( _inputFile, 0666 );
+=======
+        inFd = open(_inputFile,O_RDONLY);
+>>>>>>> origin/mini-shell-HMH2
         if ( inFd < 0 ) {
             perror( "ls : create infile" );
             exit( 2 );
@@ -161,7 +165,7 @@ Command::execute()
     }
 //problem wih appending to already existing output file
     if(_outFile){
-        outFd = creat( _outFile, O_RDWR );
+        outFd = open(_outFile,O_WRONLY);
         if ( outFd < 0 ) {
             perror( "ls : create outfile" );
             exit( 2 );
