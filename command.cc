@@ -155,7 +155,7 @@ Command::execute()
     int inFd,outFd,errFd;
 
     if(_inputFile){
-        inFd = creat( _inputFile, 0667 );
+        inFd = open(_inputFile,O_RDONLY);
         if ( inFd < 0 ) {
             perror( "ls : create infile" );
             exit( 2 );
@@ -166,7 +166,7 @@ Command::execute()
     }
 
     if(_outFile){
-        outFd = creat( _outFile, 0666 );
+        outFd = open(_outFile,O_WRONLY);
         if ( outFd < 0 ) {
             perror( "ls : create outfile" );
             exit( 2 );
@@ -176,7 +176,7 @@ Command::execute()
     }
 
     if(_errFile){
-        errFd = creat( _errFile, 0665 );
+        errFd = creat( _errFile, 0666 );
         if ( errFd < 0 ) {
             perror( "ls : create errorfile" );
             exit( 2 );
