@@ -140,22 +140,17 @@ Command::execute()
         return;
     }
 
+    printf("hey there\n");
     // Print contents of Command data structure
     print();
 
-    // Add execution here
-    // For every simple command fork a new process
-    // Setup i/o redirection
-    // and call exec
-//    _outFile?_outFile:"default",
-//            _inputFile?_inputFile:"default", _errFile?_errFile:"default"
     int defaultin = dup( 0 );
     int defaultout = dup( 1 );
     int defaulterr = dup( 2 );
     int inFd,outFd,errFd;
 
     if(_inputFile){
-        inFd = creat( _inputFile, 0667 );
+        inFd = open( _inputFile, 0666 );
         if ( inFd < 0 ) {
             perror( "ls : create infile" );
             exit( 2 );
@@ -164,9 +159,9 @@ Command::execute()
             dup2( inFd, 0 );
 
     }
-
+//problem wih appending to already existing output file
     if(_outFile){
-        outFd = creat( _outFile, 0666 );
+        outFd = creat( _outFile, O_RDWR );
         if ( outFd < 0 ) {
             perror( "ls : create outfile" );
             exit( 2 );
@@ -176,7 +171,7 @@ Command::execute()
     }
 
     if(_errFile){
-        errFd = creat( _errFile, 0665 );
+        errFd = creat( _errFile, 0666 );
         if ( errFd < 0 ) {
             perror( "ls : create errorfile" );
             exit( 2 );
@@ -190,7 +185,9 @@ Command::execute()
 
     int pid = fork();
     if(pid == 0){
-
+        close( inFd );
+        close( outFd );
+        close( errFd );
         close( defaultin );
         close( defaultout );
         close( defaulterr );
@@ -201,6 +198,18 @@ Command::execute()
         exit( 2 );
         printf("im in baby process");
     }
+
+    dup2( defaultin, 0 );
+    dup2( defaultout, 1 );
+    dup2( defaulterr, 2 );
+
+//    close( inFd );
+//    close( outFd );
+//    close( errFd );
+//    close( defaultin );
+//    close( defaultout );
+//    close( defaulterr );
+
     if(!_background){
         waitpid( pid, 0, 0 );
     }
@@ -208,18 +217,7 @@ Command::execute()
     clear();
     printf("im the mainprocess\n");
 
-    //Restor defaut file descriptors
-    dup2( defaultin, 0 );
-    dup2( defaultout, 1 );
-    dup2( defaulterr, 2 );
 
-    // Close file descriptors that are not needed
-    close( inFd );
-    close( outFd );
-    close( errFd );
-    close( defaultin );
-    close( defaultout );
-    close( defaulterr );
 
     // Print new prompt
     prompt();
