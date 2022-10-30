@@ -584,8 +584,8 @@ static const yytype_int8 yytranslate[] =
 static const yytype_uint8 yyrline[] =
 {
        0,    36,    36,    40,    41,    53,    57,    61,    65,    66,
-      70,    77,    78,    82,    90,    99,   103,   107,   111,   115,
-     121,   127,   133,   139
+      70,    77,    78,    82,    90,    99,   103,   108,   112,   116,
+     122,   128,   135,   142
 };
 #endif
 
@@ -1228,74 +1228,77 @@ yyreduce:
                        {
 		printf("   Yacc: insert output \"%s\"\n", (yyvsp[0].string_val));
 		Command::_currentCommand._outFile = (yyvsp[0].string_val);
+		Command::_currentCommand._append = 1;
 	}
-#line 1233 "y.tab.c"
+#line 1234 "y.tab.c"
     break;
 
   case 17: /* iomodifier_opt: SMALL WORD  */
-#line 107 "shell.y"
+#line 108 "shell.y"
                      {
 		printf("   Yacc: insert input \"%s\"\n", (yyvsp[0].string_val));
 		Command::_currentCommand._inputFile = (yyvsp[0].string_val);
 	}
-#line 1242 "y.tab.c"
+#line 1243 "y.tab.c"
     break;
 
   case 18: /* iomodifier_opt: AND  */
-#line 111 "shell.y"
+#line 112 "shell.y"
                 {
 		printf ("	Yacc: insert background operation\n");
 		Command::_currentCommand._background = 1;
 	}
-#line 1251 "y.tab.c"
+#line 1252 "y.tab.c"
     break;
 
   case 19: /* iomodifier_opt: GREAT WORD SMALL WORD  */
-#line 115 "shell.y"
+#line 116 "shell.y"
                                 {
 		printf("   Yacc: insert output \"%s\"\n", (yyvsp[-2].string_val));
 		Command::_currentCommand._outFile = (yyvsp[-2].string_val);
 		printf("   Yacc: insert input \"%s\"\n", (yyvsp[0].string_val));
 		Command::_currentCommand._inputFile = (yyvsp[0].string_val);
 	}
-#line 1262 "y.tab.c"
+#line 1263 "y.tab.c"
     break;
 
   case 20: /* iomodifier_opt: SMALL WORD GREAT WORD  */
-#line 121 "shell.y"
+#line 122 "shell.y"
                                 {
 		printf("   Yacc: insert output \"%s\"\n", (yyvsp[0].string_val));
 		Command::_currentCommand._outFile = (yyvsp[0].string_val);
 		printf("   Yacc: insert input \"%s\"\n", (yyvsp[-2].string_val));
 		Command::_currentCommand._inputFile = (yyvsp[-2].string_val);
 	}
-#line 1273 "y.tab.c"
+#line 1274 "y.tab.c"
     break;
 
   case 21: /* iomodifier_opt: GREATER WORD SMALL WORD  */
-#line 127 "shell.y"
+#line 128 "shell.y"
                                         {
 		printf("   Yacc: insert output \"%s\"\n", (yyvsp[-2].string_val));
 		Command::_currentCommand._outFile = (yyvsp[-2].string_val);
 		printf("   Yacc: insert input \"%s\"\n", (yyvsp[0].string_val));
 		Command::_currentCommand._inputFile = (yyvsp[0].string_val);
+		Command::_currentCommand._append = 1;
 	}
-#line 1284 "y.tab.c"
+#line 1286 "y.tab.c"
     break;
 
   case 22: /* iomodifier_opt: SMALL WORD GREATER WORD  */
-#line 133 "shell.y"
+#line 135 "shell.y"
                                         {
 		printf("   Yacc: insert output \"%s\"\n", (yyvsp[0].string_val));
 		Command::_currentCommand._outFile = (yyvsp[0].string_val);
 		printf("   Yacc: insert input \"%s\"\n", (yyvsp[-2].string_val));
 		Command::_currentCommand._inputFile = (yyvsp[-2].string_val);
+		Command::_currentCommand._append = 1;
 	}
-#line 1295 "y.tab.c"
+#line 1298 "y.tab.c"
     break;
 
 
-#line 1299 "y.tab.c"
+#line 1302 "y.tab.c"
 
       default: break;
     }
@@ -1488,7 +1491,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 142 "shell.y"
+#line 145 "shell.y"
 
 
 void

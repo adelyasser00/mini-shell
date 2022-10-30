@@ -103,6 +103,7 @@ iomodifier_opt:
 	| GREATER WORD {
 		printf("   Yacc: insert output \"%s\"\n", $2);
 		Command::_currentCommand._outFile = $2;
+		Command::_currentCommand._append = 1;
 	}
 	| SMALL WORD {
 		printf("   Yacc: insert input \"%s\"\n", $2);
@@ -129,12 +130,14 @@ iomodifier_opt:
 		Command::_currentCommand._outFile = $2;
 		printf("   Yacc: insert input \"%s\"\n", $4);
 		Command::_currentCommand._inputFile = $4;
+		Command::_currentCommand._append = 1;
 	}
 	| SMALL WORD GREATER WORD	{
 		printf("   Yacc: insert output \"%s\"\n", $4);
 		Command::_currentCommand._outFile = $4;
 		printf("   Yacc: insert input \"%s\"\n", $2);
 		Command::_currentCommand._inputFile = $2;
+		Command::_currentCommand._append = 1;
 	}
 	| /* can be empty */ 
 	;

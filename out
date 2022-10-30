@@ -1,22 +1,24 @@
-adel.txt
-bruh.txt
-command.cc
-command.h
-command.o
-examples
-lab3-src
-lex.yy.c
-lex.yy.o
-Makefile
-out
-out2
-README.md
-shell
-shell.l
-shell.y
-y.tab.c
-y.tab.h
-y.tab.o
-im the mainprocess
-im the mainprocess
+total 344
+drwxrwxr-x 5 adelyasser00 adelyasser00  4096 أكت 30 00:47 .
+drwxr-xr-x 6 adelyasser00 adelyasser00  4096 أكت 29 21:47 ..
+-rw-rw-r-- 1 adelyasser00 adelyasser00     0 أكت 29 23:36 adel.txt
+-rw-rw-r-- 1 adelyasser00 adelyasser00   178 أكت 30 00:04 bruh.txt
+-rw-rw-r-- 1 adelyasser00 adelyasser00  6126 أكت 30 00:47 command.cc
+-rw-rw-r-- 1 adelyasser00 adelyasser00   752 أكت 30 00:33 command.h
+-rw-rw-r-- 1 adelyasser00 adelyasser00 34216 أكت 30 00:47 command.o
+drwxrwxr-x 2 adelyasser00 adelyasser00  4096 أكت 29 23:06 examples
+drwxrwxr-x 2 adelyasser00 adelyasser00  4096 أكت 29 21:43 .idea
+drwxrwxr-x 3 adelyasser00 adelyasser00  4096 أكت 29 21:43 lab3-src
+-rw-rw-r-- 1 adelyasser00 adelyasser00 45181 أكت 30 00:47 lex.yy.c
+-rw-rw-r-- 1 adelyasser00 adelyasser00 44640 أكت 30 00:47 lex.yy.o
+-rw-rw-r-- 1 adelyasser00 adelyasser00   338 أكت 29 21:43 Makefile
+-rw-rw-r-- 1 adelyasser00 adelyasser00   375 أكت 30 00:49 out
+-rw-rw-r-- 1 adelyasser00 adelyasser00   394 أكت 30 00:49 out2
+-rw-rw-r-- 1 adelyasser00 adelyasser00   112 أكت 29 21:43 README.md
+-rwxrwxr-x 1 adelyasser00 adelyasser00 69816 أكت 30 00:47 shell
+-rw-rw-r-- 1 adelyasser00 adelyasser00   557 أكت 29 23:02 shell.l
+-rw-rw-r-- 1 adelyasser00 adelyasser00  3110 أكت 30 00:42 shell.y
+-rw-rw-r-- 1 adelyasser00 adelyasser00 47189 أكت 30 00:47 y.tab.c
+-rw-rw-r-- 1 adelyasser00 adelyasser00  3187 أكت 30 00:47 y.tab.h
+-rw-rw-r-- 1 adelyasser00 adelyasser00 29272 أكت 30 00:47 y.tab.o
 im the mainprocess
