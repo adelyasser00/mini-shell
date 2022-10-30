@@ -163,29 +163,22 @@ Command::execute()
     }
 //problem wih appending to already existing output file
     if(_outFile){
-//        if (_append == 1){
-//            outFd = open(_outFile,O_APPEND);
-//            if ( outFd < 0 ) {
-//                perror( "ls : create outfile" );
-//                exit( 2 );
-//            }
-//            else
-//                dup2( outFd, 1 );
-//        }
-//        else{
-            outFd = open(_outFile,O_CREAT|O_WRONLY);
+        if (_append == 1) {
+            outFd = open(_outFile, O_APPEND | O_WRONLY);
+            if (outFd < 0) {
+                perror("ls : create outfile");
+                exit(2);
+            } else {
+                dup2(outFd, 1);
+            }
+        }
 
+        else{
+            outFd = open(_outFile,O_CREAT|O_WRONLY);
             if ( outFd < 0 ) {
                 perror( "ls : create outfile" );
                 exit( 2 );
             }
-            else{
-                dup2( outFd, 1 );
-
-            }
-
-//
-   //     }
     }
 
     if(_errFile){
