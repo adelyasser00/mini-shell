@@ -59,6 +59,7 @@ Command::Command()
     _inputFile = 0;
     _errFile = 0;
     _background = 0;
+    _append = 0;
 }
 
 void
@@ -103,6 +104,7 @@ Command:: clear()
     _inputFile = 0;
     _errFile = 0;
     _background = 0;
+    _append = 0;
 }
 
 void
@@ -161,13 +163,23 @@ Command::execute()
     }
 //problem wih appending to already existing output file
     if(_outFile){
-        outFd = open(_outFile,O_WRONLY);
-        if ( outFd < 0 ) {
-            perror( "ls : create outfile" );
-            exit( 2 );
+        if (_append == 1){
+            outFd = open(_outFile,O_APPEND);
+            if ( outFd < 0 ) {
+                perror( "ls : create outfile" );
+                exit( 2 );
+            }
+            else
+                dup2( outFd, 1 );
         }
-        else
-            dup2( outFd, 1 );
+        else{
+            outFd = open(_outFile,O_WRONLY);
+            if ( outFd < 0 ) {
+                perror( "ls : create outfile" );
+                exit( 2 );
+            }
+            else
+                dup2( outFd, 1 );}
     }
 
     if(_errFile){
