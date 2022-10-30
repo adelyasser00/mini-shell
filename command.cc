@@ -150,11 +150,7 @@ Command::execute()
     int inFd,outFd,errFd;
 
     if(_inputFile){
-<<<<<<< HEAD
-        inFd = open( _inputFile, 0666 );
-=======
         inFd = open(_inputFile,O_RDONLY);
->>>>>>> origin/mini-shell-HMH2
         if ( inFd < 0 ) {
             perror( "ls : create infile" );
             exit( 2 );
