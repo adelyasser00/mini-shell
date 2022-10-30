@@ -134,10 +134,9 @@ Command::print()
 }
 
 void
-Command::execute()
-{
+Command::execute() {
     // Don't do anything if there are no simple commands
-    if ( _numberOfSimpleCommands == 0 ) {
+    if (_numberOfSimpleCommands == 0) {
         prompt();
         return;
     }
@@ -146,23 +145,22 @@ Command::execute()
     // Print contents of Command data structure
     print();
 
-    int defaultin = dup( 0 );
-    int defaultout = dup( 1 );
-    int defaulterr = dup( 2 );
-    int inFd,outFd,errFd;
+    int defaultin = dup(0);
+    int defaultout = dup(1);
+    int defaulterr = dup(2);
+    int inFd, outFd, errFd;
 
-    if(_inputFile){
-        inFd = open(_inputFile,O_RDONLY);
-        if ( inFd < 0 ) {
-            perror( "ls : create infile" );
-            exit( 2 );
-        }
-        else
-            dup2( inFd, 0 );
+    if (_inputFile) {
+        inFd = open(_inputFile, O_RDONLY);
+        if (inFd < 0) {
+            perror("ls : create infile");
+            exit(2);
+        } else
+            dup2(inFd, 0);
 
     }
 //problem wih appending to already existing output file
-    if(_outFile){
+    if (_outFile) {
         if (_append == 1) {
             outFd = open(_outFile, O_APPEND | O_WRONLY);
             if (outFd < 0) {
@@ -171,48 +169,43 @@ Command::execute()
             } else {
                 dup2(outFd, 1);
             }
-        }
-
-        else{
-            outFd = open(_outFile,O_CREAT|O_WRONLY);
-            if ( outFd < 0 ) {
-                perror( "ls : create outfile" );
-                exit( 2 );
+        } else {
+            outFd = open(_outFile, O_CREAT | O_WRONLY);
+            if (outFd < 0) {
+                perror("ls : create outfile");
+                exit(2);
             }
-    }
-
-    if(_errFile){
-        errFd = creat( _errFile, 0666 );
-        if ( errFd < 0 ) {
-            perror( "ls : create errorfile" );
-            exit( 2 );
         }
-        else
-            dup2( errFd, 2 );
-    }
+
+        if (_errFile) {
+            errFd = creat(_errFile, 0666);
+            if (errFd < 0) {
+                perror("ls : create errorfile");
+                exit(2);
+            } else
+                dup2(errFd, 2);
+        }
 
 
+        int pid = fork();
+        if (pid == 0) {
+            close(inFd);
+            close(outFd);
+            close(errFd);
+            close(defaultin);
+            close(defaultout);
+            close(defaulterr);
 
+            int status = execvp(_simpleCommands[0]->_arguments[0], _simpleCommands[0]->_arguments);
 
-    int pid = fork();
-    if(pid == 0){
-        close( inFd );
-        close( outFd );
-        close( errFd );
-        close( defaultin );
-        close( defaultout );
-        close( defaulterr );
+            perror("error :");
+            exit(2);
+            printf("im in baby process");
+        }
 
-        int status = execvp(_simpleCommands[0]->_arguments[ 0 ],_simpleCommands[0]->_arguments);
-
-        perror( "error :");
-        exit( 2 );
-        printf("im in baby process");
-    }
-
-    dup2( defaultin, 0 );
-    dup2( defaultout, 1 );
-    dup2( defaulterr, 2 );
+        dup2(defaultin, 0);
+        dup2(defaultout, 1);
+        dup2(defaulterr, 2);
 
 //    close( inFd );
 //    close( outFd );
@@ -221,17 +214,18 @@ Command::execute()
 //    close( defaultout );
 //    close( defaulterr );
 
-    if(!_background){
-        waitpid( pid, 0, 0 );
+        if (!_background) {
+            waitpid(pid, 0, 0);
+        }
+        // Clear to prepare for next command
+        clear();
+        printf("im the mainprocess\n");
+
+
+
+        // Print new prompt
+        prompt();
     }
-    // Clear to prepare for next command
-    clear();
-    printf("im the mainprocess\n");
-
-
-
-    // Print new prompt
-    prompt();
 }
 
 // Shell implementation
