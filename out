@@ -1,7 +1,25 @@
-total 344
-drwxrwxr-x 5 adelyasser00 adelyasser00  4096 أكت 30 00:47 .
-drwxr-xr-x 6 adelyasser00 adelyasser00  4096 أكت 29 21:47 ..
--rw-rw-r-- 1 adelyasser00 adelyasser00     0 أكت 29 23:36 adel.txt
+adel.txt
+bruh.txt
+command.cc
+command.h
+command.o
+examples
+lab3-src
+lex.yy.c
+lex.yy.o
+loser
+Makefile
+out
+out2
+README.md
+shell
+shell.l
+shell.y
+y.tab.c
+y.tab.h
+y.tab.o
+im the mainprocess
+كت 29 23:36 adel.txt
 -rw-rw-r-- 1 adelyasser00 adelyasser00   178 أكت 30 00:04 bruh.txt
 -rw-rw-r-- 1 adelyasser00 adelyasser00  6126 أكت 30 00:47 command.cc
 -rw-rw-r-- 1 adelyasser00 adelyasser00   752 أكت 30 00:33 command.h
@@ -21,4 +39,27 @@ drwxrwxr-x 3 adelyasser00 adelyasser00  4096 أكت 29 21:43 lab3-src
 -rw-rw-r-- 1 adelyasser00 adelyasser00 47189 أكت 30 00:47 y.tab.c
 -rw-rw-r-- 1 adelyasser00 adelyasser00  3187 أكت 30 00:47 y.tab.h
 -rw-rw-r-- 1 adelyasser00 adelyasser00 29272 أكت 30 00:47 y.tab.o
+im the mainprocess
+adel.txt
+bruh.txt
+command.cc
+command.h
+command.o
+examples
+hayam
+lab3-src
+lex.yy.c
+lex.yy.o
+llol
+loser
+Makefile
+out
+out2
+README.md
+shell
+shell.l
+shell.y
+y.tab.c
+y.tab.h
+y.tab.o
 im the mainprocess

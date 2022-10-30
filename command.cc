@@ -169,7 +169,7 @@ Command::execute()
 
     if(_outFile){
         if (_append == 1){
-            outFd = open(_outFile,O_APPEND);
+            outFd = open(_outFile,O_APPEND|O_WRONLY);
             if ( outFd < 0 ) {
                 perror( "ls : create outfile" );
                 exit( 2 );
@@ -178,7 +178,7 @@ Command::execute()
                 dup2( outFd, 1 );
         }
         else{
-            outFd = open(_outFile,O_WRONLY);
+            outFd = open(_outFile,O_CREAT|O_WRONLY);
             if ( outFd < 0 ) {
                 perror( "ls : create outfile" );
                 exit( 2 );
