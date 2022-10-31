@@ -140,8 +140,6 @@ Command::execute() {
         prompt();
         return;
     }
-
-    printf("hey there\n");
     // Print contents of Command data structure
     print();
 
@@ -150,6 +148,8 @@ Command::execute() {
     int defaulterr = dup(2);
     int inFd, outFd, errFd;
 
+
+//tested and verified, no create needed cuz you cant create the source DOESNT MAKE SENSE
     if (_inputFile) {
         inFd = open(_inputFile, O_RDONLY);
         if (inFd < 0) {
@@ -159,23 +159,26 @@ Command::execute() {
             dup2(inFd, 0);
 
     }
-//problem wih appending to already existing output file
-    if (_outFile) {
-        if (_append == 1) {
-            outFd = open(_outFile, O_APPEND | O_WRONLY);
-            if (outFd < 0) {
-                perror("ls : create outfile");
-                exit(2);
-            } else {
-                dup2(outFd, 1);
+//works perfectly fine if file already created or not , for overwrite and append
+    if(_outFile){
+        if (_append == 1){
+            outFd = open(_outFile,O_APPEND|O_WRONLY|O_CREAT,0666);
+            if ( outFd < 0 ) {
+                perror( "ls : create outfile" );
+                exit( 2 );
             }
-        } else {
-            outFd = open(_outFile, O_CREAT | O_WRONLY,0777);
-            if (outFd < 0) {
-                perror("ls : create outfile");
-                exit(2);
-            }
+            else
+                dup2( outFd, 1 );
         }
+        else{
+            outFd = open(_outFile,O_TRUNC | O_CREAT|O_WRONLY,0666);
+            if ( outFd < 0 ) {
+                perror( "ls : create outfile" );
+                exit( 2 );
+            }
+            else
+                dup2( outFd, 1 );}
+    }
 
         if (_errFile) {
             errFd = creat(_errFile, 0666);
@@ -200,13 +203,16 @@ Command::execute() {
 
             perror("error :");
             exit(2);
-            printf("im in baby process");
         }
 
         dup2(defaultin, 0);
         dup2(defaultout, 1);
         dup2(defaulterr, 2);
 
+        close( outFd );
+        close( defaultin );
+        close( defaultout );
+        close( defaulterr );
         if (!_background) {
             waitpid(pid, 0, 0);
         }
@@ -214,12 +220,10 @@ Command::execute() {
         clear();
         printf("im the mainprocess\n");
 
-
-
         // Print new prompt
         prompt();
     }
-}
+
 
 // Shell implementation
 
