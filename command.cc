@@ -170,7 +170,7 @@ Command::execute() {
                 dup2(outFd, 1);
             }
         } else {
-            outFd = open(_outFile, O_CREAT | O_WRONLY);
+            outFd = open(_outFile, O_CREAT | O_WRONLY,0777);
             if (outFd < 0) {
                 perror("ls : create outfile");
                 exit(2);
@@ -206,13 +206,6 @@ Command::execute() {
         dup2(defaultin, 0);
         dup2(defaultout, 1);
         dup2(defaulterr, 2);
-
-//    close( inFd );
-//    close( outFd );
-//    close( errFd );
-//    close( defaultin );
-//    close( defaultout );
-//    close( defaulterr );
 
         if (!_background) {
             waitpid(pid, 0, 0);
