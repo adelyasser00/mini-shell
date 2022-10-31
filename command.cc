@@ -148,102 +148,118 @@ Command::execute() {
     int defaulterr = dup(2);
     int inFd, outFd, errFd;
 
-
+    int fdpipe[2];
+    if (pipe(fdpipe) == -1) {
+        perror("cat_grep: pipe");
+        exit(2);
+    }
 //tested and verified, no create needed cuz you cant create the source DOESNT MAKE SENSE
     if (_inputFile) {
-        inFd = open(_inputFile, O_RDONLY);
-        if (inFd < 0) {
+        fdpipe[0] = open(_inputFile, O_RDONLY);
+        if (fdpipe[0] < 0) {
             perror("ls : create infile");
             exit(2);
         } else
-            dup2(inFd, 0);
+            dup2(fdpipe[0], 0);
 
     }
 //works perfectly fine if file already created or not , for overwrite and append
-    if(_outFile){
-        if (_append == 1){
-            outFd = open(_outFile,O_APPEND|O_WRONLY|O_CREAT,0666);
-            if ( outFd < 0 ) {
-                perror( "ls : create outfile" );
-                exit( 2 );
-            }
-            else
-                dup2( outFd, 1 );
-        }
-        else{
-            outFd = open(_outFile,O_TRUNC | O_CREAT|O_WRONLY,0666);
-            if ( outFd < 0 ) {
-                perror( "ls : create outfile" );
-                exit( 2 );
-            }
-            else
-                dup2( outFd, 1 );}
+
+
+    if (_errFile) {
+        errFd = creat(_errFile, 0666);
+        if (errFd < 0) {
+            perror("ls : create errorfile");
+            exit(2);
+        } else
+            dup2(errFd, 2);
     }
 
-        if (_errFile) {
-            errFd = creat(_errFile, 0666);
-            if (errFd < 0) {
-                perror("ls : create errorfile");
-                exit(2);
-            } else
-                dup2(errFd, 2);
+////////// for loop body
+    for (int i = 0; i < _numberOfSimpleCommands; i++) {
+        if(i == _numberOfSimpleCommands -1){
+            if (_outFile) {
+                if (_append == 1) {
+                    outFd = open(_outFile, O_APPEND | O_WRONLY | O_CREAT, 0666);
+                    if (outFd < 0) {
+                        perror("ls : create outfile");
+                        exit(2);
+                    } else
+                        dup2(outFd, 1);
+                } else {
+                    outFd = open(_outFile, O_TRUNC | O_CREAT | O_WRONLY, 0666);
+                    if (outFd < 0) {
+                        perror("ls : create outfile");
+                        exit(2);
+                    } else
+                        dup2(outFd, 1);
+                }}
         }
-
-
         int pid = fork();
         if (pid == 0) {
-            close(inFd);
-            close(outFd);
+            close(fdpipe[0]);
+            close(fdpipe[1]);
             close(errFd);
             close(defaultin);
             close(defaultout);
             close(defaulterr);
 
-            int status = execvp(_simpleCommands[0]->_arguments[0], _simpleCommands[0]->_arguments);
+            int status = execvp(_simpleCommands[i]->_arguments[i], _simpleCommands[i]->_arguments);
 
             perror("error :");
             exit(2);
         }
 
-        dup2(defaultin, 0);
-        dup2(defaultout, 1);
+        dup2(fdpipe[0], 0);
+        dup2(fdpipe[1], 1);
         dup2(defaulterr, 2);
 
-        close( outFd );
-        close( defaultin );
-        close( defaultout );
-        close( defaulterr );
-        if (!_background) {
-            waitpid(pid, 0, 0);
-        }
-        // Clear to prepare for next command
-        clear();
-        printf("im the mainprocess\n");
 
-        // Print new prompt
-        prompt();
     }
+
+
+    dup2( defaultin, 0 );
+    dup2( defaultout, 1 );
+    dup2( defaulterr, 2 );
+            // Close file descriptors that are not needed
+            close(fdpipe[0]);
+            close(fdpipe[1]);
+            close(defaultin);
+            close(defaultout);
+            close(defaulterr);
+            /////////
+//        if (!_background) {
+//            waitpid(pid, 0, 0);
+//        }
+            // Clear to prepare for next command
+            clear();
+            printf("im the mainprocess\n");
+
+            // Print new prompt
+            prompt();
+        }
+
 
 
 // Shell implementation
 
-void
-Command::prompt()
-{
-    printf("myshell>");
-    fflush(stdout);
-}
+        void
+        Command::prompt()
+        {
+            printf("myshell>");
+            fflush(stdout);
+        }
 
-Command Command::_currentCommand;
-SimpleCommand * Command::_currentSimpleCommand;
+        Command Command::_currentCommand;
+        SimpleCommand * Command::_currentSimpleCommand;
 
-int yyparse(void);
+        int yyparse(void);
 
-int
-main()
-{
-    Command::_currentCommand.prompt();
-    yyparse();
-    return 0;
-}
+        int
+        main()
+        {
+            Command::_currentCommand.prompt();
+            yyparse();
+            return 0;
+        }
 
