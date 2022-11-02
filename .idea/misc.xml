@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+<<<<<<< HEAD
   <component name="MakefileWorkspace">
     <contentRoot DIR="$PROJECT_DIR$" />
   </component>
+=======
+  <component name="ExternalStorageConfigurationManager" enabled="true" />
+  <component name="MakefileWorkspace" PROJECT_DIR="$PROJECT_DIR$" />
+>>>>>>> 02626f165ba598a5edb8beab7e48a5caac6ca220
 </project>
