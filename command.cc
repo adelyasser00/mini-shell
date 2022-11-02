@@ -150,7 +150,7 @@ Command::execute() {
 
     if (_inputFile) {
         inFd = open(_inputFile, O_RDONLY);
-        if (fdpipe[0] < 0) {
+        if (inFd < 0) {
             perror("error : create infile");
             exit(2);
         } else
@@ -193,7 +193,7 @@ Command::execute() {
         }
         int pid = fork();
         if ( pid == -1 ) {
-            perror( "cat_grep: fork\n");
+            perror( "command: fork\n");
             exit( 2 );
         }
         if (pid == 0) {
@@ -212,6 +212,7 @@ Command::execute() {
             exit(2);
         }
         dup2(fdpipe[0], 0);
+        waitpid( pid, 0, 0 );
         }
 
     dup2(defaultin, 0);
@@ -224,6 +225,7 @@ Command::execute() {
     close(defaultin);
     close(defaultout);
     close(defaulterr);
+
 
     clear();
     printf("im the mainprocess\n");
