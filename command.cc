@@ -144,24 +144,24 @@ Command::execute() {
 
     int fdpipe[2];
     if (pipe(fdpipe) == -1) {
-        perror("cat_grep: pipe");
+        perror("command : pipe");
         exit(2);
     }
-//tested and verified, no create needed cuz you cant create the source DOESNT MAKE SENSE
+
     if (_inputFile) {
-        fdpipe[0] = open(_inputFile, O_RDONLY);
+        inFd = open(_inputFile, O_RDONLY);
         if (fdpipe[0] < 0) {
-            perror("ls : create infile");
+            perror("error : create infile");
             exit(2);
         } else
-            dup2(fdpipe[0], 0);
+            dup2(inFd, 0);
 
     }
 
     if (_errFile) {
         errFd = creat(_errFile, 0666);
         if (errFd < 0) {
-            perror("ls : create errorfile");
+            perror("error : create errorfile");
             exit(2);
         } else
             dup2(errFd, 2);
@@ -169,7 +169,6 @@ Command::execute() {
 
 ////////// for loop body
     for (int i = 0; i < _numberOfSimpleCommands; i++) {
-        dup2(fdpipe[0], 0);
         dup2(fdpipe[1], 1);
         dup2(defaulterr, 2);
 
@@ -193,9 +192,14 @@ Command::execute() {
             }
         }
         int pid = fork();
+        if ( pid == -1 ) {
+            perror( "cat_grep: fork\n");
+            exit( 2 );
+        }
         if (pid == 0) {
             close(fdpipe[0]);
             close(fdpipe[1]);
+            close(inFd);
             close(outFd);
             close(errFd);
             close(defaultin);
@@ -207,12 +211,8 @@ Command::execute() {
             perror("error :");
             exit(2);
         }
-
-
-
-
-    }
-
+        dup2(fdpipe[0], 0);
+        }
 
     dup2(defaultin, 0);
     dup2(defaultout, 1);
