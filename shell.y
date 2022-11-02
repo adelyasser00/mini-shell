@@ -52,7 +52,7 @@ simple_command:
 	| NEWLINE 
 	| error NEWLINE { yyerrok; }
 	;
-
+//command for pipe
 pipe_command:
 	pipe_command PIPE command_and_args
 	| command_and_args
