@@ -263,6 +263,21 @@ void
 Command::executeSimpleCommand(){}
 void
 Command::execute() {
+    // handle cd differently
+    if (_numberOfAvailableSimpleCommands==1 && _simpleCommands[0]->_numberOfArguments == 1 || _simpleCommands[0]->_numberOfArguments == 2 && strcmp(_simpleCommands[0]->_arguments[0], "cd") == 0 ){
+        printf("cd intercepted\n");
+        if (_simpleCommands[0]->_numberOfArguments == 1){
+        int ch = chdir(getenv("HOME"));
+        }
+        else 
+        if (chdir(_simpleCommands[0]->_arguments[1]) == -1)
+        printf("directory doesn't exist");
+
+        print();
+        clear();
+        prompt();
+        return;
+    }
     // Don't do anything if there are no simple commands
     if (_numberOfSimpleCommands == 0) {
         prompt();
@@ -487,7 +502,9 @@ printf("# of simple commands %d",_numberOfSimpleCommands);
 
 void
 Command::prompt() {
-    printf("myshell>");
+    char cwd[256];
+    getcwd(cwd,256);
+    printf("myshell>%s ",cwd);
     fflush(stdout);
 }
 
