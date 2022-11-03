@@ -41,29 +41,21 @@ commands:
 	| commands command 
 	;
 
-// //complex_commands:
-// 	complex_command
-// 	| complex_commands complex_command
-//	;
-
-//complex_command: 
-	
-	
-
 command: simple_command
         ;
 
 simple_command:	
-	command_and_args iomodifier_opt NEWLINE {
+	pipe_command iomodifier_opt NEWLINE {
 		printf("   Yacc: Execute command\n");
-		Command::_currentCommand.execute();
-	}
-	| command_and_args iomodifier_opt PIPE {
-		printf("   Yacc: Execute piped command\n");
 		Command::_currentCommand.execute();
 	}
 	| NEWLINE 
 	| error NEWLINE { yyerrok; }
+	;
+//command for pipe
+pipe_command:
+	pipe_command PIPE command_and_args
+	| command_and_args
 	;
 
 command_and_args:
