@@ -1,4 +1,3 @@
-
 /*
  * CS354: Shell project
  *
@@ -129,25 +128,28 @@ Command::print() {
 }
 
 void
-Command::execute() {
-    // Don't do anything if there are no simple commands
-    if (_numberOfSimpleCommands == 0) {
-        prompt();
-        return;
+PrintDebugging(int _numberOfSimpleCommands, SimpleCommand **_simpleCommands) {
+    char *c;
+    int a;
+    printf("number of simple commands %d\n", _numberOfSimpleCommands);
+    for (int i = 0; i < _numberOfSimpleCommands; i++) {
+        printf("%d th command has %d argument\n", i, _simpleCommands[i]->_numberOfArguments);
+        c = _simpleCommands[i]->_arguments[i];
+        a = 0;
+        while (c != NULL) {
+            printf("%d th comand argument %s\n", i, c);
+            a++;
+            c = _simpleCommands[i]->_arguments[a];
+        }
     }
-    // Print contents of Command data structure
-    print();
+}
 
-    int defaultin = dup(0);
+void
+Command::executePipedCommands() {
+    int defaultint = dup(0);
     int defaultout = dup(1);
     int defaulterr = dup(2);
     int inFd, outFd, errFd;
-
-    int fdpipe[2];
-    if (pipe(fdpipe) == -1) {
-        perror("command : pipe");
-        exit(2);
-    }
 
     if (_inputFile) {
         inFd = open(_inputFile, O_RDONLY);
@@ -157,7 +159,8 @@ Command::execute() {
         } else
             dup2(inFd, 0);
 
-    }
+    }else
+        inFd = defaultint;
 
     if (_errFile) {
         errFd = creat(_errFile, 0666);
@@ -166,94 +169,333 @@ Command::execute() {
             exit(2);
         } else
             dup2(errFd, 2);
+    }else
+        errFd = defaulterr;
+
+
+    if (_outFile) {
+        if (_append == 1) {
+            outFd = open(_outFile, O_APPEND | O_WRONLY | O_CREAT, 0666);
+            if (outFd < 0) {
+                perror("error : bad acess to outfile or non existent");
+                exit(2);
+            } else
+                dup2(outFd, 1);
+        } else {
+            outFd = open(_outFile, O_TRUNC | O_CREAT | O_WRONLY, 0666);
+            if (outFd < 0) {
+                perror("error : bad acess to outfile or non existent\"");
+                exit(2);
+            } else
+                dup2(outFd, 1);
+        }
+    }else{
+        outFd = defaultout;
     }
 
-////////// for loop body
+
+    int fdpipe[2];
+    //bytes written on PIPEDES[1] can be read from PIPEDES[0].
+    if (pipe(fdpipe) == -1) {
+        perror("command : pipe");
+        exit(2);
+    }
+
     for (int i = 0; i < _numberOfSimpleCommands; i++) {
-        dup2(fdpipe[1], 1);
-        dup2(defaulterr, 2);
-
-        if (i == _numberOfSimpleCommands - 1) {
-            if (_outFile) {
-                if (_append == 1) {
-                    outFd = open(_outFile, O_APPEND | O_WRONLY | O_CREAT, 0666);
-                    if (outFd < 0) {
-                        perror("ls : create outfile");
-                        exit(2);
-                    } else
-                        dup2(outFd, 1);
-                } else {
-                    outFd = open(_outFile, O_TRUNC | O_CREAT | O_WRONLY, 0666);
-                    if (outFd < 0) {
-                        perror("ls : create outfile");
-                        exit(2);
-                    } else
-                        dup2(outFd, 1);
-                }
-            }
-        }
-        int pid = fork();
-        if ( pid == -1 ) {
-            perror( "command: fork\n");
-            exit( 2 );
-        }
-        if (pid == 0) {
-            close(fdpipe[0]);
+        if (i == 0) {
+            dup2(fdpipe[1],1);
             close(fdpipe[1]);
+            dup2(inFd, 0);
             close(inFd);
+        } else if(i==_numberOfSimpleCommands-1){
+            dup2(outFd,1);
             close(outFd);
-            close(errFd);
-            close(defaultin);
-            close(defaultout);
-            close(defaulterr);
+            dup2(fdpipe[0], 0);
+            close(fdpipe[0]);
+        }else {
+            dup2(fdpipe[1],1);
+            close(fdpipe[1]);
+            dup2(fdpipe[0], 0);
+            close(fdpipe[0]);
+        }
 
-            int status = execvp(_simpleCommands[i]->_arguments[i], _simpleCommands[i]->_arguments);
 
-            perror("error :");
+        int pid = fork();
+        if (pid == -1) {
+            perror("command: fork\n");
             exit(2);
         }
-        dup2(fdpipe[0], 0);
-        waitpid( pid, 0, 0 );
+
+        if(pid == 0){
+            close(defaultout);
+            close(defaulterr);
+            close(defaultint);
+            close(inFd);
+            close(fdpipe[0]);
+            close(fdpipe[1]);
+
+            execvp(_simpleCommands[i]->_arguments[0],_simpleCommands[i]->_arguments);
+            perror("piping error :");
+            exit(2);
+        }
+        else{
+            waitpid( pid, 0, 0 );
         }
 
-    dup2(defaultin, 0);
-    dup2(defaultout, 1);
-    dup2(defaulterr, 2);
+        }
+
+    dup2( defaultint, 0 );
+    dup2( defaultout, 1 );
+    dup2( defaulterr, 2 );
+
     // Close file descriptors that are not needed
     close(fdpipe[0]);
     close(fdpipe[1]);
-    close(outFd);
-    close(defaultin);
-    close(defaultout);
-    close(defaulterr);
+    close( defaultint );
+    close( defaultout );
+    close( defaulterr );
+    }
 
+    void
+    Command::execute() {
+        // Don't do anything if there are no simple commands
+        if (_numberOfSimpleCommands == 0) {
+            prompt();
+            return;
+        }
+        // Print contents of Command data structure
+        print();
+        PrintDebugging(_numberOfSimpleCommands, _simpleCommands);
 
-    clear();
-    printf("im the mainprocess\n");
+        if (_numberOfSimpleCommands > 1) {
+            executePipedCommands();
+        } else {
+            executeSimpleCommand();
+        }
 
-    // Print new prompt
-    prompt();
-}
+//    int defaultin = dup(0);
+//    int defaultout = dup(1);
+//    int defaulterr = dup(2);
+//    int inFd, outFd, errFd;
+//
+//    if (_inputFile) {
+//        inFd = open(_inputFile, O_RDONLY);
+//        if (inFd < 0) {
+//            perror("error : create infile");
+//            exit(2);
+//        } else
+//            dup2(inFd, 0);
+//
+//    }
+//
+//    if (_errFile) {
+//        errFd = creat(_errFile, 0666);
+//        if (errFd < 0) {
+//            perror("error : create errorfile");
+//            exit(2);
+//        } else
+//            dup2(errFd, 2);
+//    }
+//
+//    int fdpipe[2];
+//    //bytes written on PIPEDES[1] can be read from PIPEDES[0].
+//    if (pipe(fdpipe) == -1) {
+//        perror("command : pipe");
+//        exit(2);
+//    }
+//
+//    if(_numberOfSimpleCommands == 1){
+//        if (_outFile) {
+//            if (_append == 1) {
+//                outFd = open(_outFile, O_APPEND | O_WRONLY | O_CREAT, 0666);
+//                if (outFd < 0) {
+//                    perror("ls : create outfile");
+//                    exit(2);
+//                } else
+//                    dup2(outFd, 1);
+//            } else {
+//                outFd = open(_outFile, O_TRUNC | O_CREAT | O_WRONLY, 0666);
+//                if (outFd < 0) {
+//                    perror("ls : create outfile");
+//                    exit(2);
+//                } else
+//                    dup2(outFd, 1);
+//            }
+//        }
+//        else{
+//            dup2(defaultout,1);
+//        }
+//    }else{
+//        dup2(fdpipe[1],1);
+//    }
+//    int pid = fork();
+//    if ( pid == -1 ) {
+//        perror( "command: fork\n");
+//        exit( 2 );
+//    }
+//    if (pid == 0) {
+//        close(fdpipe[1]);
+//        close(fdpipe[0]);
+//        close(inFd);
+//        close(errFd);
+//        close(defaultin);
+//        close(defaultout);
+//        close(defaulterr);
+//
+//        int status = execvp(_simpleCommands[0]->_arguments[0], _simpleCommands[0]->_arguments);
+//
+////        if(status<0){
+////            char* c = _simpleCommands[0]->_arguments[0];
+////            int a =0;
+////            while(c != NULL){
+////                printf("HERE IS AN ARGUMENT IN OUTER COMMAND %s\n",c);
+////                a++;
+////                c = _simpleCommands[0]->_arguments[a];
+////            }
+////            printf("STATUS  %d th command %s empty\n",status,_simpleCommands[0]->_arguments[0]);
+////
+////            perror("error command :");
+////        }
+//        perror("error command :");
+//        exit(2);
+//    }
+//   // waitpid( pid, 0, 0 );
+//
+////    printf("NUMBER OF SIMPLE COMMANDS %d\n",_numberOfSimpleCommands);
+////////////// for loop body
+//    for (int i = 1; i < _numberOfSimpleCommands-1; i++) {
+//        dup2(fdpipe[1], 1);
+//        dup2(defaulterr, 2);
+//        dup2(fdpipe[0], 0);
+//
+//        int pid_in = fork();
+//        if ( pid_in == -1 ) {
+//            perror( "command: fork\n");
+//            exit( 2 );
+//        }
+//        if (pid_in == 0) {
+//            close(fdpipe[0]);
+//            close(fdpipe[1]);
+//            close(inFd);
+//            close(outFd);
+//            close(errFd);
+//            close(defaultin);
+//            close(defaultout);
+//            close(defaulterr);
+//
+//            int status = execvp(_simpleCommands[i]->_arguments[0], _simpleCommands[i]->_arguments);
+////            if(status < 0){
+////                char* c = _simpleCommands[i]->_arguments[0];
+////                int a =0;
+////                while(c != NULL){
+////                   printf("HERE IS AN ARGUMENT IN INNER COMMAND %s\n",c);
+////                   a++;
+////                   c = _simpleCommands[i]->_arguments[a];
+////                }
+////                printf("STATUS %d %d th command %s empty\n",status,i,_simpleCommands[i]->_arguments[i]);
+////
+////                perror("error command :");
+////            }
+//            perror("error command :");
+//            exit(2);
+//        }
+//
+//        waitpid( pid_in, 0, 0 );
+//    }
+//
+//    if(_numberOfSimpleCommands > 1){
+//            if (_outFile) {
+//                if (_append == 1) {
+//                    outFd = open(_outFile, O_APPEND | O_WRONLY | O_CREAT, 0666);
+//                    if (outFd < 0) {
+//                        perror("ls : create outfile");
+//                        exit(2);
+//                    } else
+//                        dup2(outFd, 1);
+//                } else {
+//                    outFd = open(_outFile, O_TRUNC | O_CREAT | O_WRONLY, 0666);
+//                    if (outFd < 0) {
+//                        perror("ls : create outfile");
+//                        exit(2);
+//                    } else
+//                        dup2(outFd, 1);
+//                }
+//            }
+//            else{
+//                dup2(defaultout,1);
+//            }
+//        }
+//
+//        int pid_in = fork();
+//        if ( pid_in == -1 ) {
+//            perror( "command: fork\n");
+//            exit( 2 );
+//        }
+//        if (pid_in == 0) {
+//            close(fdpipe[0]);
+//            close(fdpipe[1]);
+//            close(inFd);
+//            close(outFd);
+//            close(errFd);
+//            close(defaultin);
+//            close(defaultout);
+//            close(defaulterr);
+//
+//            int status = execvp(_simpleCommands[i]->_arguments[i], _simpleCommands[i]->_arguments);
+////            if(status < 0){
+////                char* c = _simpleCommands[i]->_arguments[0];
+////                int a =0;
+////                while(c != NULL){
+////                   printf("HERE IS AN ARGUMENT IN INNER COMMAND %s\n",c);
+////                   a++;
+////                   c = _simpleCommands[i]->_arguments[a];
+////                }
+////                printf("STATUS %d %d th command %s empty\n",status,i,_simpleCommands[i]->_arguments[i]);
+////
+////                perror("error command :");
+////            }
+//            perror("error command :");
+//            exit(2);
+//        }
+//    }
+//
+//    dup2(defaultin, 0);
+//    dup2(defaultout, 1);
+//    dup2(defaulterr, 2);
+//    // Close file descriptors that are not needed
+//    close(fdpipe[0]);
+//    close(fdpipe[1]);
+//    close(outFd);
+//    close(defaultin);
+//    close(defaultout);
+//    close(defaulterr);
+//
+//
+        clear();
+//    printf("im the mainprocess\n");
+
+        // Print new prompt
+        prompt();
+    }
 
 
 
 // Shell implementation
 
-void
-Command::prompt() {
-    printf("myshell>");
-    fflush(stdout);
-}
+    void
+    Command::prompt() {
+        printf("myshell>");
+        fflush(stdout);
+    }
 
-Command Command::_currentCommand;
-SimpleCommand *Command::_currentSimpleCommand;
+    Command Command::_currentCommand;
+    SimpleCommand *Command::_currentSimpleCommand;
 
-int yyparse(void);
+    int yyparse(void);
 
-int
-main() {
-    Command::_currentCommand.prompt();
-    yyparse();
-    return 0;
-}
-
+    int
+    main() {
+        Command::_currentCommand.prompt();
+        yyparse();
+        return 0;
+    }

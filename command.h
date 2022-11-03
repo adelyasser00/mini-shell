@@ -28,6 +28,8 @@ struct Command {
 	void prompt();
 	void print();
 	void execute();
+    void executeSimpleCommand();
+    void executePipedCommands();
 	void clear();
 	
 	Command();
