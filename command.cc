@@ -147,15 +147,19 @@ PrintDebugging(int _numberOfSimpleCommands, SimpleCommand **_simpleCommands) {
     printf("---END OF DEBUGGING PRINT---");
 }
 
+int child_pid;
 void
 handler(int sig){
-    printf("child process terminated");
+    int pid = wait(NULL);
+    printf("%d child process terminated\n",pid);
     signal(sig,handler);
 }
 void
 Command::execute()
 {
     signal(SIGINT,SIG_IGN);
+    signal(SIGCHLD,handler);
+
     // Don't do anything if there are no simple commands
     if (_numberOfSimpleCommands == 0) {
         prompt();
@@ -170,7 +174,8 @@ Command::execute()
 
     print();
 
-    if (_numberOfSimpleCommands > 1) {
+
+    if (_numberOfSimpleCommands >= 1) {
         int defaultint = dup(0);
         int defaultout = dup(1);
         int defaulterr = dup(2);
@@ -248,10 +253,6 @@ Command::execute()
 
             dup2(outFd,1);
             close(outFd);
-
-            struct sigaction act;
-
-            signal(SIGCHLD,handler);
              pid = fork();
             if (pid == -1) {
                 perror("command: fork\n");
@@ -271,7 +272,8 @@ Command::execute()
                 exit(1);
             }
 //            else {
-//                waitpid(pid,0,0);
+//                printf("---process %d---\n",pid);
+//                child_pid = pid;
 //            }
 
 
