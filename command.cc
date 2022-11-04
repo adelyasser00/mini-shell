@@ -148,121 +148,15 @@ PrintDebugging(int _numberOfSimpleCommands, SimpleCommand **_simpleCommands) {
 }
 
 void
-Command::executePipedCommands() {
-    int defaultint = dup(0);
-    int defaultout = dup(1);
-    int defaulterr = dup(2);
-    int inFd, outFd, errFd;
-
-    if (_inputFile) {
-        inFd = open(_inputFile, O_RDONLY);
-        if (inFd < 0) {
-            perror("error : create infile");
-            exit(2);
-        } else
-            dup2(inFd, 0);
-
-    } else
-        inFd = defaultint;
-
-    if (_errFile) {
-        errFd = creat(_errFile, 0666);
-        if (errFd < 0) {
-            perror("error : create errorfile");
-            exit(2);
-        } else
-            dup2(errFd, 2);
-    } else
-        errFd = defaulterr;
-
-
-    if (_outFile) {
-        if (_append == 1) {
-            outFd = open(_outFile, O_APPEND | O_WRONLY | O_CREAT, 0666);
-            if (outFd < 0) {
-                perror("error : bad acess to outfile or non existent");
-                exit(2);
-            } else
-                dup2(outFd, 1);
-        } else {
-            outFd = open(_outFile, O_TRUNC | O_CREAT | O_WRONLY, 0666);
-            if (outFd < 0) {
-                perror("error : bad acess to outfile or non existent\"");
-                exit(2);
-            } else
-                dup2(outFd, 1);
-        }
-    } else {
-        outFd = defaultout;
-    }
-
-
-    int fdpipe[2];
-    //bytes written on PIPEDES[1] can be read from PIPEDES[0].
-    if (pipe(fdpipe) == -1) {
-        perror("command : pipe");
-        exit(2);
-    }
-
-    for (int i = 0; i < _numberOfSimpleCommands; i++) {
-        if (i == 0) {
-            dup2(fdpipe[1], 1);
-            close(fdpipe[1]);
-            dup2(inFd, 0);
-            close(inFd);
-        } else if (i == _numberOfSimpleCommands - 1) {
-            dup2(outFd, 1);
-            close(outFd);
-            dup2(fdpipe[0], 0);
-            close(fdpipe[0]);
-        } else {
-            dup2(fdpipe[1], 1);
-            close(fdpipe[1]);
-            dup2(fdpipe[0], 0);
-            close(fdpipe[0]);
-        }
-
-
-        int pid = fork();
-        if (pid == -1) {
-            perror("command: fork\n");
-            exit(2);
-        }
-
-        if (pid == 0) {
-            close(defaultout);
-            close(defaulterr);
-            close(defaultint);
-            close(inFd);
-            close(fdpipe[0]);
-            close(fdpipe[1]);
-
-            execvp(_simpleCommands[i]->_arguments[0], _simpleCommands[i]->_arguments);
-            perror("piping error :");
-            exit(2);
-        } else {
-            waitpid(pid, 0, 0);
-        }
-
-    }
-
-    dup2(defaultint, 0);
-    dup2(defaultout, 1);
-    dup2(defaulterr, 2);
-
-    // Close file descriptors that are not needed
-    close(fdpipe[0]);
-    close(fdpipe[1]);
-    close(defaultint);
-    close(defaultout);
-    close(defaulterr);
+handler(int sig){
+    int pid = wait(NULL);
+    printf("%d child process terminated\n",pid);
+    signal(sig,handler);
 }
 
-
-void
-Command::executeSimpleCommand(){}
 void
 Command::execute() {
+    signal(SIGCHLD,handler);
         // handle cd differently
     if (_numberOfAvailableSimpleCommands==1 && _simpleCommands[0]->_numberOfArguments == 1 || _simpleCommands[0]->_numberOfArguments == 2 && strcmp(_simpleCommands[0]->_arguments[0], "cd") == 0 ){
     printf("cd intercepted\n");
@@ -283,14 +177,14 @@ Command::execute() {
         prompt();
         return;
     }
-    printf("# of simple commands %d",_numberOfSimpleCommands);
+    //printf("# of simple commands %d",_numberOfSimpleCommands);
     // Print contents of Command data structure
     print();
   // PrintDebugging(_numberOfSimpleCommands, _simpleCommands);
 
-printf("# of simple commands %d",_numberOfSimpleCommands);
-    if (_numberOfSimpleCommands > 1) {
-        printf("yes # of commands > 1");
+    //printf("# of simple commands %d",_numberOfSimpleCommands);
+    if (_numberOfSimpleCommands >= 1) {
+        // printf("yes # of commands > 1");
        // executePipedCommands();
         int defaultint = dup(0);
         int defaultout = dup(1);
