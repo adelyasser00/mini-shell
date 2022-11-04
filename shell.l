@@ -43,6 +43,13 @@
 "<"	{
 		return SMALL;
 }
+">&" {
+		return ANDGREAT;
+}
+
+">>&" {
+		return ANDGREATER;
+}
 
 [^ \t\n][^ \t\n]*  {
 		/* Assume that file names have only alpha chars */

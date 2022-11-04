@@ -13,7 +13,7 @@
 
 %token	<string_val> WORD
 
-%token 	NOTOKEN GREAT NEWLINE GREATER PIPE AND SMALL
+%token 	NOTOKEN GREAT NEWLINE GREATER PIPE AND SMALL ANDGREAT ANDGREATER
 
 %union	{
 		char   *string_val;
@@ -133,6 +133,21 @@ iomodifier_opt:
 		printf("   Yacc: insert input \"%s\"\n", $2);
 		Command::_currentCommand._inputFile = $2;
 		Command::_currentCommand._append = 1;
+	}
+	| ANDGREAT WORD {
+		printf("   Yacc: insert output \"%s\"\n", $2);
+		Command::_currentCommand._outFile = $2;
+		//for simplicity we will use the append flag. append=1 for &>> operation
+		Command::_currentCommand._append = 0;
+		Command::_currentCommand._appback = 1;
+	}
+	
+	| ANDGREATER WORD {
+		printf("   Yacc: insert output \"%s\"\n", $2);
+		Command::_currentCommand._outFile = $2;
+		//for simplicity we will use the append flag. append=1 for &>> operation
+		Command::_currentCommand._append = 1;
+		Command::_currentCommand._appback = 1;
 	}
 	| /* can be empty */ 
 	;

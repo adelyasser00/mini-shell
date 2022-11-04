@@ -263,20 +263,20 @@ void
 Command::executeSimpleCommand(){}
 void
 Command::execute() {
-    // handle cd differently
+        // handle cd differently
     if (_numberOfAvailableSimpleCommands==1 && _simpleCommands[0]->_numberOfArguments == 1 || _simpleCommands[0]->_numberOfArguments == 2 && strcmp(_simpleCommands[0]->_arguments[0], "cd") == 0 ){
-        printf("cd intercepted\n");
-        if (_simpleCommands[0]->_numberOfArguments == 1){
-        int ch = chdir(getenv("HOME"));
-        }
-        else 
-        if (chdir(_simpleCommands[0]->_arguments[1]) == -1)
-        printf("directory doesn't exist");
+    printf("cd intercepted\n");
+    if (_simpleCommands[0]->_numberOfArguments == 1){
+    int ch = chdir(getenv("HOME"));
+    }
+    else 
+    if (chdir(_simpleCommands[0]->_arguments[1]) == -1)
+    printf("directory doesn't exist");
 
-        print();
-        clear();
-        prompt();
-        return;
+    print();
+    clear();
+    prompt();
+    return;
     }
     // Don't do anything if there are no simple commands
     if (_numberOfSimpleCommands == 0) {
@@ -340,14 +340,22 @@ printf("# of simple commands %d",_numberOfSimpleCommands);
                             perror("error : bad acess to outfile or non existent");
                             exit(2);
                         } else
-                            dup2(outFd, 1);
+                            {
+                                dup2(outFd, 1);
+                                if (_appback == 1)
+                                    dup2(outFd,2);
+                            }
                     } else {
                         outFd = open(_outFile, O_TRUNC | O_CREAT | O_WRONLY, 0666);
                         if (outFd < 0) {
                             perror("error : bad acess to outfile or non existent\"");
                             exit(2);
                         } else
-                            dup2(outFd, 1);
+                            {
+                                dup2(outFd, 1);
+                                if (_appback == 1)
+                                    dup2(outFd,2);
+                            }
                     }
                 } else {
                     outFd = dup(defaultout);
@@ -432,26 +440,6 @@ printf("# of simple commands %d",_numberOfSimpleCommands);
 
         }
 //works perfectly fine if file already created or not , for overwrite and append
-        if(_outFile){
-            if (_append == 1){
-                outFd = open(_outFile,O_APPEND|O_WRONLY|O_CREAT,0666);
-                if ( outFd < 0 ) {
-                    perror( "ls : create outfile" );
-                    exit( 2 );
-                }
-                else
-                    dup2( outFd, 1 );
-            }
-            else{
-                outFd = open(_outFile,O_TRUNC | O_CREAT|O_WRONLY,0666);
-                if ( outFd < 0 ) {
-                    perror( "ls : create outfile" );
-                    exit( 2 );
-                }
-                else
-                    dup2( outFd, 1 );}
-        }
-
         if (_errFile) {
             errFd = creat(_errFile, 0666);
             if (errFd < 0) {
@@ -460,6 +448,37 @@ printf("# of simple commands %d",_numberOfSimpleCommands);
             } else
                 dup2(errFd, 2);
         }
+        
+        if(_outFile){
+            if (_append == 1){
+                outFd = open(_outFile,O_APPEND|O_WRONLY|O_CREAT,0666);
+                if ( outFd < 0 ) {
+                    perror( "ls : create outfile" );
+                    exit( 2 );
+                }
+                else
+                    {
+                                dup2(outFd, 1);
+                                if (_appback == 1)
+                                    dup2(outFd,2);
+                            }
+            }
+            else{
+                outFd = open(_outFile,O_TRUNC | O_CREAT|O_WRONLY,0666);
+                if ( outFd < 0 ) {
+                    perror( "ls : create outfile" );
+                    exit( 2 );
+                }
+                else
+                    {
+                                dup2(outFd, 1);
+                                if (_appback == 1)
+                                    dup2(outFd,2);
+                            }
+                            }
+        }
+
+        
 
 
         int pid = fork();
