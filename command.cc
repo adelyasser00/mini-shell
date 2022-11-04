@@ -148,34 +148,45 @@ PrintDebugging(int _numberOfSimpleCommands, SimpleCommand **_simpleCommands) {
 }
 
 int child_pid;
-void
-handler(int sig){
-    int pid = wait(NULL);
-    printf("%d child process terminated\n",pid);
-    signal(sig,handler);
-}
-void
-Command::execute()
-{
-    signal(SIGINT,SIG_IGN);
-    signal(SIGCHLD,handler);
 
-    // Don't do anything if there are no simple commands
-    if (_numberOfSimpleCommands == 0) {
+void
+handler(int sig) {
+    int pid = wait(NULL);
+    printf("%d child process terminated\n", pid);
+    signal(sig, handler);
+}
+
+void
+Command::execute() {
+    signal(SIGINT, SIG_IGN);
+    signal(SIGCHLD, handler);
+
+    //if exit typed, terminate whole program
+    if (_numberOfSimpleCommands == 1 && _simpleCommands[0]->_numberOfArguments == 1 &&
+        strcmp(_simpleCommands[0]->_arguments[0], "exit") == 0) {
+        exit(0);
+    }
+
+    // handle cd differently
+     if (_numberOfSimpleCommands == 1 &&
+        (_simpleCommands[0]->_numberOfArguments == 1 || _simpleCommands[0]->_numberOfArguments == 2) &&
+        strcmp(_simpleCommands[0]->_arguments[0], "cd") == 0) {
+        printf("cd intercepted\n");
+        if (_simpleCommands[0]->_numberOfArguments == 1) {
+            int ch = chdir(getenv("HOME"));
+        } else if (chdir(_simpleCommands[0]->_arguments[1]) == -1)
+            printf("directory doesn't exist\n");
+
+        print();
+        clear();
         prompt();
         return;
     }
 
-    //if exit typed, terminate whole program
-    if(_numberOfSimpleCommands == 1 && _simpleCommands[0]->_numberOfArguments == 1 && strcmp(_simpleCommands[0]->_arguments[0], "exit") == 0){
-        exit(0);
-    }
-
-
+    // Print contents of Command data structure
     print();
 
-
-    if (_numberOfSimpleCommands >= 1) {
+       if (_numberOfSimpleCommands >= 1) {
         int defaultint = dup(0);
         int defaultout = dup(1);
         int defaulterr = dup(2);
@@ -204,7 +215,7 @@ Command::execute()
 
         int pid;
         for (int i = 0; i < _numberOfSimpleCommands; i++) {
-            dup2(inFd,0);
+            dup2(inFd, 0);
             close(inFd);
 //            if (i == 0) {
 //                dup2(fdpipe[1], 1);
@@ -219,15 +230,21 @@ Command::execute()
                         if (outFd < 0) {
                             perror("error : bad acess to outfile or non existent");
                             exit(2);
-                        } else
+                        } else {
                             dup2(outFd, 1);
+                            if (_appback == 1)
+                                dup2(outFd, 2);
+                        }
                     } else {
                         outFd = open(_outFile, O_TRUNC | O_CREAT | O_WRONLY, 0666);
                         if (outFd < 0) {
                             perror("error : bad acess to outfile or non existent\"");
                             exit(2);
-                        } else
+                        } else {
                             dup2(outFd, 1);
+                            if (_appback == 1)
+                                dup2(outFd, 2);
+                        }
                     }
                 } else {
                     outFd = dup(defaultout);
@@ -243,17 +260,17 @@ Command::execute()
                     perror("command : pipe");
                     exit(2);
                 }
-                inFd=fdpipe[0];
-                outFd=fdpipe[1];
+                inFd = fdpipe[0];
+                outFd = fdpipe[1];
 //                dup2(fdpipe[1], 1);
 //                close(fdpipe[1]);
 //                dup2(fdpipe[0], 0);
 //                close(fdpipe[0]);
             }
 
-            dup2(outFd,1);
+            dup2(outFd, 1);
             close(outFd);
-             pid = fork();
+            pid = fork();
             if (pid == -1) {
                 perror("command: fork\n");
                 exit(2);
@@ -271,11 +288,6 @@ Command::execute()
                 perror("piping error :");
                 exit(1);
             }
-//            else {
-//                printf("---process %d---\n",pid);
-//                child_pid = pid;
-//            }
-
 
         }
 
@@ -289,12 +301,12 @@ Command::execute()
         close(errFd);
 
         if (!_background) {
-            waitpid(pid, 0,0);
+            waitpid(pid, 0, 0);
         }
 
     }
     else {
-       // executeSimpleCommand();
+        // executeSimpleCommand();
         int defaultin = dup(0);
         int defaultout = dup(1);
         int defaulterr = dup(2);
@@ -312,24 +324,37 @@ Command::execute()
 
         }
 //works perfectly fine if file already created or not , for overwrite and append
-        if(_outFile){
-            if (_append == 1){
-                outFd = open(_outFile,O_APPEND|O_WRONLY|O_CREAT,0666);
-                if ( outFd < 0 ) {
-                    perror( "ls : create outfile" );
-                    exit( 2 );
+        if (_errFile) {
+            errFd = creat(_errFile, 0666);
+            if (errFd < 0) {
+                perror("ls : create errorfile");
+                exit(2);
+            } else
+                dup2(errFd, 2);
+        }
+
+        if (_outFile) {
+            if (_append == 1) {
+                outFd = open(_outFile, O_APPEND | O_WRONLY | O_CREAT, 0666);
+                if (outFd < 0) {
+                    perror("ls : create outfile");
+                    exit(2);
+                } else {
+                    dup2(outFd, 1);
+                    if (_appback == 1)
+                        dup2(outFd, 2);
                 }
-                else
-                    dup2( outFd, 1 );
+            } else {
+                outFd = open(_outFile, O_TRUNC | O_CREAT | O_WRONLY, 0666);
+                if (outFd < 0) {
+                    perror("ls : create outfile");
+                    exit(2);
+                } else {
+                    dup2(outFd, 1);
+                    if (_appback == 1)
+                        dup2(outFd, 2);
+                }
             }
-            else{
-                outFd = open(_outFile,O_TRUNC | O_CREAT|O_WRONLY,0666);
-                if ( outFd < 0 ) {
-                    perror( "ls : create outfile" );
-                    exit( 2 );
-                }
-                else
-                    dup2( outFd, 1 );}
         }
 
 
@@ -362,10 +387,10 @@ Command::execute()
         dup2(defaultout, 1);
         dup2(defaulterr, 2);
 
-        close( outFd );
-        close( defaultin );
-        close( defaultout );
-        close( defaulterr );
+        close(outFd);
+        close(defaultin);
+        close(defaultout);
+        close(defaulterr);
         if (!_background) {
             waitpid(pid, 0, 0);
         }
@@ -383,7 +408,9 @@ Command::execute()
 
 void
 Command::prompt() {
-    printf("myshell>");
+    char cwd[256];
+    getcwd(cwd, 256);
+    printf("myshell>%s ", cwd);
     fflush(stdout);
 }
 
