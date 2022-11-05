@@ -20,7 +20,11 @@
 #include <ctime>
 
 #include <time.h>
-
+#include <iostream>
+#include <string>
+#include <iostream>
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
 #include "command.h"
 
 
@@ -151,15 +155,6 @@ PrintDebugging(int _numberOfSimpleCommands, SimpleCommand **_simpleCommands) {
     printf("---END OF DEBUGGING PRINT---");
 }
 
-int child_pid;
-
-//void
-//handler(int sig) {
-//    int pid = wait(NULL);
-//    printf("%d child process terminated\n", pid);
-//    signal(sig, handler);
-//}
-
 void
 handler(int sig) {
     int pid = wait(NULL);
@@ -170,7 +165,6 @@ handler(int sig) {
 
     fprintf(log, "%02d-%02d-%02d %02d/%02d/%d\n", curr.tm_hour, curr.tm_min, curr.tm_sec, curr.tm_mday, curr.tm_mon + 1,
             curr.tm_year + 1900);
-    fprintf(log, "------------------------------------------------------\n");
     fprintf(log, "%d child process terminated\n", pid);
     //printf("%d child process terminated\n", pid);
     fprintf(log, "------------------------------------------------------\n");
@@ -314,102 +308,6 @@ Command::execute() {
     close(inFd);
     close(outFd);
     close(errFd);
-
-//    if (i == _numberOfSimpleCommands - 1 && !_background) {
-//        waitpid(pid, 0, 0);
-//    }
-
-    //   }
-//    else {
-//        // executeSimpleCommand();
-//        int defaultin = dup(0);
-//        int defaultout = dup(1);
-//        int defaulterr = dup(2);
-//        int inFd, outFd, errFd;
-//
-//
-////tested and verified, no create needed cuz you cant create the source DOESNT MAKE SENSE
-//        if (_inputFile) {
-//            inFd = open(_inputFile, O_RDONLY);
-//            if (inFd < 0) {
-//                perror("ls : create infile");
-//                exit(2);
-//            } else
-//                dup2(inFd, 0);
-//
-//        }
-////works perfectly fine if file already created or not , for overwrite and append
-//        if (_errFile) {
-//            errFd = creat(_errFile, 0666);
-//            if (errFd < 0) {
-//                perror("ls : create errorfile");
-//                exit(2);
-//            } else
-//                dup2(errFd, 2);
-//        }
-//
-//        if (_outFile) {
-//            if (_append == 1) {
-//                outFd = open(_outFile, O_APPEND | O_WRONLY | O_CREAT, 0666);
-//                if (outFd < 0) {
-//                    perror("ls : create outfile");
-//                    exit(2);
-//                } else {
-//                    dup2(outFd, 1);
-//                    if (_appback == 1)
-//                        dup2(outFd, 2);
-//                }
-//            } else {
-//                outFd = open(_outFile, O_TRUNC | O_CREAT | O_WRONLY, 0666);
-//                if (outFd < 0) {
-//                    perror("ls : create outfile");
-//                    exit(2);
-//                } else {
-//                    dup2(outFd, 1);
-//                    if (_appback == 1)
-//                        dup2(outFd, 2);
-//                }
-//            }
-//        }
-//
-//
-//        if (_errFile) {
-//            errFd = creat(_errFile, 0666);
-//            if (errFd < 0) {
-//                perror("ls : create errorfile");
-//                exit(2);
-//            } else
-//                dup2(errFd, 2);
-//        }
-//
-//
-//        int pid = fork();
-//        if (pid == 0) {
-//            close(inFd);
-//            close(outFd);
-//            close(errFd);
-//            close(defaultin);
-//            close(defaultout);
-//            close(defaulterr);
-//
-//            int status = execvp(_simpleCommands[0]->_arguments[0], _simpleCommands[0]->_arguments);
-//
-//            perror("error :");
-//            exit(2);
-//        }
-//
-//        dup2(defaultin, 0);
-//        dup2(defaultout, 1);
-//        dup2(defaulterr, 2);
-//
-//        close(outFd);
-//        close(defaultin);
-//        close(defaultout);
-//        close(defaulterr);
-//        if (!_background) {
-//            waitpid(pid, 0, 0);
-//        }
-//    }
 
     clear();
 
