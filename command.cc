@@ -19,7 +19,10 @@
 #include <csignal>
 #include <ctime>
 
+#include <time.h>
+
 #include "command.h"
+
 
 SimpleCommand::SimpleCommand() {
     // Creat available space for 5 arguments
@@ -175,7 +178,6 @@ handler(int sig) {
 
 
     fclose(log);
-
     //printf("%d child process terminated\n", pid);
     // signal(sig,handler);
 }
@@ -191,10 +193,15 @@ Command::execute() {
         exit(0);
     }
 
+
+    if (_numberOfSimpleCommands == 0) {
+        prompt();
+        return;
+    }
     // handle cd differently
-    if (_numberOfSimpleCommands == 1 &&
-        (_simpleCommands[0]->_numberOfArguments == 1 || _simpleCommands[0]->_numberOfArguments == 2) &&
+    if (_numberOfSimpleCommands == 1 && _simpleCommands[0]->_numberOfArguments <= 2 &&
         strcmp(_simpleCommands[0]->_arguments[0], "cd") == 0) {
+        printf("cd intercepted\n");
         if (_simpleCommands[0]->_numberOfArguments == 1) {
             int ch = chdir(getenv("HOME"));
         } else if (chdir(_simpleCommands[0]->_arguments[1]) == -1)
@@ -236,8 +243,8 @@ Command::execute() {
     } else
         errFd = defaulterr;
 
-    int pid,i;
-    for ( i = 0; i < _numberOfSimpleCommands; i++) {
+    int pid, i;
+    for (i = 0; i < _numberOfSimpleCommands; i++) {
         dup2(inFd, 0);
         close(inFd);
         if (i == _numberOfSimpleCommands - 1) {
@@ -275,6 +282,7 @@ Command::execute() {
             }
             inFd = fdpipe[0];
             outFd = fdpipe[1];
+
         }
 
         dup2(outFd, 1);
@@ -289,6 +297,7 @@ Command::execute() {
             execvp(_simpleCommands[i]->_arguments[0], _simpleCommands[i]->_arguments);
             perror("piping error :");
             exit(1);
+
         }
 
         if (i == _numberOfSimpleCommands - 1 && !_background) {
