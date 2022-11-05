@@ -45,7 +45,7 @@ command: simple_command
         ;
 
 simple_command:	
-	pipe_command iomodifier_opt NEWLINE {
+	pipe_command iobgmodifiers NEWLINE {
 		printf("   Yacc: Execute command\n");
 		Command::_currentCommand.execute();
 	}
@@ -56,6 +56,13 @@ simple_command:
 pipe_command:
 	pipe_command PIPE command_and_args
 	| command_and_args
+	;
+
+iobgmodifiers:
+	background_opt
+	| iomodifier_opt
+	| iobgmodifiers background_opt
+	| background_opt iomodifier_opt
 	;
 
 command_and_args:
@@ -87,6 +94,13 @@ command_word:
 	}
 	;
 
+background_opt:
+	 AND	{
+		printf ("	Yacc: insert background operation\n");
+		Command::_currentCommand._background = 1;
+	}
+	;
+
 iomodifier_opt:
 	GREAT WORD {
 		printf("   Yacc: insert output \"%s\"\n", $2);
@@ -102,10 +116,7 @@ iomodifier_opt:
 		printf("   Yacc: insert input \"%s\"\n", $2);
 		Command::_currentCommand._inputFile = $2;
 	}
-	| AND	{
-		printf ("	Yacc: insert background operation\n");
-		Command::_currentCommand._background = 1;
-	}
+	
 	| GREAT WORD SMALL WORD	{
 		printf("   Yacc: insert output \"%s\"\n", $2);
 		Command::_currentCommand._outFile = $2;

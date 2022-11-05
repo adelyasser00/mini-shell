@@ -18,7 +18,10 @@
 #include <string.h>
 #include <signal.h>
 
+#include <time.h>
+
 #include "command.h"
+
 
 SimpleCommand::SimpleCommand() {
     // Creat available space for 5 arguments
@@ -149,16 +152,43 @@ PrintDebugging(int _numberOfSimpleCommands, SimpleCommand **_simpleCommands) {
 
 void
 handler(int sig){
-    int pid = wait(NULL);
-    printf("%d child process terminated\n",pid);
-    signal(sig,handler);
+    int pid= wait(NULL);
+    int status;
+    time_t tim = time(NULL);
+    struct tm curr = *localtime(&tim);
+    FILE *log = fopen("logfile","a");
+
+        fprintf(log,"%02d-%02d-%02d %02d/%02d/%d\n",curr.tm_sec, curr.tm_min, curr.tm_hour, curr.tm_mday, curr.tm_mon+1, curr.tm_year+1900);
+        fprintf(log,"------------------------------------------------------\n");
+        fprintf(log ,"%d child process terminated\n", pid);
+        printf("%d child process terminated\n", pid);
+        fprintf(log,"------------------------------------------------------\n");
+        signal(sig, handler);
+        
+
+    fclose(log);
+    
+    //printf("%d child process terminated\n", pid);
+    // signal(sig,handler);
 }
 
 void
 Command::execute() {
-    signal(SIGCHLD,handler);
+    signal(SIGINT, SIG_IGN);
+    //signal(SIGCHLD,handler);
+    //if exit typed, terminate whole program
+    if (_numberOfSimpleCommands == 1 && _simpleCommands[0]->_numberOfArguments == 1 &&
+        strcmp(_simpleCommands[0]->_arguments[0], "exit") == 0) {
+        exit(0);
+    }
+    
+    
+    if (_numberOfSimpleCommands == 0) {
+        prompt();
+        return;
+    }
         // handle cd differently
-    if (_numberOfAvailableSimpleCommands==1 && _simpleCommands[0]->_numberOfArguments == 1 || _simpleCommands[0]->_numberOfArguments == 2 && strcmp(_simpleCommands[0]->_arguments[0], "cd") == 0 ){
+    if (_numberOfSimpleCommands==1 && _simpleCommands[0]->_numberOfArguments <= 2 && strcmp(_simpleCommands[0]->_arguments[0], "cd") == 0 ){
     printf("cd intercepted\n");
     if (_simpleCommands[0]->_numberOfArguments == 1){
     int ch = chdir(getenv("HOME"));
@@ -216,7 +246,7 @@ Command::execute() {
 
 
 
-        int pid;
+        pid_t pid;
         for (int i = 0; i < _numberOfSimpleCommands; i++) {
             dup2(inFd,0);
             close(inFd);
@@ -291,13 +321,15 @@ Command::execute() {
 
                 execvp(_simpleCommands[i]->_arguments[0], _simpleCommands[i]->_arguments);
                 perror("piping error :");
+            // signal(SIGCHLD,handler);
                 exit(1);
             }
+            
 //            else {
 //                waitpid(pid,0,0);
 //            }
 
-
+        signal(SIGCHLD,handler);
 
         }
 
@@ -313,6 +345,7 @@ Command::execute() {
         if (!_background) {
             waitpid(pid, 0,0);
         }
+        signal(SIGCHLD,handler);
 
     }
     else {
@@ -385,10 +418,11 @@ Command::execute() {
             close(defaulterr);
 
             int status = execvp(_simpleCommands[0]->_arguments[0], _simpleCommands[0]->_arguments);
-
             perror("error :");
+            // signal(SIGCHLD,handler);
             exit(2);
         }
+        
 
         dup2(defaultin, 0);
         dup2(defaultout, 1);
@@ -398,9 +432,11 @@ Command::execute() {
         close( defaultin );
         close( defaultout );
         close( defaulterr );
+        // sleep(100000);
         if (!_background) {
             waitpid(pid, 0, 0);
         }
+        signal(SIGCHLD,handler);
     }
 
     clear();
