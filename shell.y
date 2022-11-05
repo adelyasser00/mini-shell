@@ -1,4 +1,3 @@
-
 /*
  * CS-413 Spring 98
  * shell.y: parser for shell
@@ -11,9 +10,9 @@
  *
  */
 
-%token	<string_val> WORD
+%token	<string_val> WORD 
 
-%token 	NOTOKEN GREAT NEWLINE GREATER PIPE AND SMALL ANDGREAT ANDGREATER
+%token 	NOTOKEN GREAT NEWLINE GREATER PIPE AND SMALL ANDGREAT ANDGREATER 
 
 %union	{
 		char   *string_val;
@@ -79,11 +78,13 @@ arg_list:
 
 argument:
 	WORD {
-               printf("   Yacc: insert argument \"%s\"\n", $1);
+           printf("   Yacc: insert argument \"%s\"\n", $1);
 
-	       Command::_currentSimpleCommand->insertArgument( $1 );\
+
+	       Command::_currentSimpleCommand->insertArgument( $1 );
 	}
 	;
+
 
 command_word:
 	WORD {

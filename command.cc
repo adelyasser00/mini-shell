@@ -26,7 +26,7 @@
 #include <experimental/filesystem>
 namespace fs = std::experimental::filesystem;
 #include "command.h"
-
+int child_pid;
 
 SimpleCommand::SimpleCommand() {
     // Creat available space for 5 arguments
@@ -155,23 +155,27 @@ PrintDebugging(int _numberOfSimpleCommands, SimpleCommand **_simpleCommands) {
     printf("---END OF DEBUGGING PRINT---");
 }
 
+
 void
 handler(int sig) {
     int pid = wait(NULL);
     int status;
     time_t tim = time(NULL);
     struct tm curr = *localtime(&tim);
-    FILE *log = fopen("logfile", "a");
+    if(pid!=-1)
+        {FILE *log = fopen("logfile", "a");
 
-    fprintf(log, "%02d-%02d-%02d %02d/%02d/%d\n", curr.tm_hour, curr.tm_min, curr.tm_sec, curr.tm_mday, curr.tm_mon + 1,
-            curr.tm_year + 1900);
-    fprintf(log, "%d child process terminated\n", pid);
-    //printf("%d child process terminated\n", pid);
-    fprintf(log, "------------------------------------------------------\n");
-    signal(sig, handler);
+        fprintf(log, "%02d-%02d-%02d %02d/%02d/%d\n", curr.tm_hour, curr.tm_min, curr.tm_sec, curr.tm_mday, curr.tm_mon + 1,
+                curr.tm_year + 1900);
+        fprintf(log, "------------------------------------------------------\n");
+        fprintf(log, "%d child process terminated\n", pid);
+        //printf("%d child process terminated\n", pid);
+        fprintf(log, "------------------------------------------------------\n");
+        signal(sig, handler);
 
 
-    fclose(log);
+        fclose(log);
+        }
     //printf("%d child process terminated\n", pid);
     // signal(sig,handler);
 }
@@ -282,6 +286,7 @@ Command::execute() {
         dup2(outFd, 1);
         close(outFd);
         pid = fork();
+        
         if (pid == -1) {
             perror("command: fork\n");
             exit(2);
@@ -293,6 +298,7 @@ Command::execute() {
             exit(1);
 
         }
+        raise(SIGCHLD);
 
         if (i == _numberOfSimpleCommands - 1 && !_background) {
             waitpid(pid, 0, 0);
