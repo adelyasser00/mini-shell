@@ -19,7 +19,6 @@
     <list default="true" id="c339b9a5-4eb6-4937-8e42-803e60abb4d9" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/command.cc" beforeDir="false" afterPath="$PROJECT_DIR$/command.cc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/command.h" beforeDir="false" afterPath="$PROJECT_DIR$/command.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/shell.l" beforeDir="false" afterPath="$PROJECT_DIR$/shell.l" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/shell.y" beforeDir="false" afterPath="$PROJECT_DIR$/shell.y" afterDir="false" />
     </list>

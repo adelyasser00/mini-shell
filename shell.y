@@ -45,17 +45,24 @@ command: simple_command
         ;
 
 simple_command:	
-	pipe_command iomodifier_opt NEWLINE {
+	pipe_command iobgmodifiers NEWLINE {
 		printf("   Yacc: Execute command\n");
 		Command::_currentCommand.execute();
 	}
-	| NEWLINE 
+	| NEWLINE
 	| error NEWLINE { yyerrok; }
 	;
 //command for pipe
 pipe_command:
 	pipe_command PIPE command_and_args
 	| command_and_args
+	;
+
+iobgmodifiers:
+	background_opt
+	| iomodifier_opt
+	| iobgmodifiers background_opt
+	| background_opt iomodifier_opt
 	;
 
 command_and_args:
@@ -81,9 +88,16 @@ argument:
 command_word:
 	WORD {
                printf("   Yacc: insert command \"%s\"\n", $1);
-	       
+
 	       Command::_currentSimpleCommand = new SimpleCommand();
 	       Command::_currentSimpleCommand->insertArgument( $1 );
+	}
+	;
+
+background_opt:
+	 AND	{
+		printf ("	Yacc: insert background operation\n");
+		Command::_currentCommand._background = 1;
 	}
 	;
 
@@ -102,10 +116,7 @@ iomodifier_opt:
 		printf("   Yacc: insert input \"%s\"\n", $2);
 		Command::_currentCommand._inputFile = $2;
 	}
-	| AND	{
-		printf ("	Yacc: insert background operation\n");
-		Command::_currentCommand._background = 1;
-	}
+
 	| GREAT WORD SMALL WORD	{
 		printf("   Yacc: insert output \"%s\"\n", $2);
 		Command::_currentCommand._outFile = $2;
@@ -136,20 +147,20 @@ iomodifier_opt:
 	}
 	| ANDGREAT WORD {
 		printf("   Yacc: insert output \"%s\"\n", $2);
-		Command::_currentCommand._outFile = $2;
+		Command::_currentCommand._errFile = $2;
 		//for simplicity we will use the append flag. append=1 for &>> operation
 		Command::_currentCommand._append = 0;
 		Command::_currentCommand._appback = 1;
 	}
-	
+
 	| ANDGREATER WORD {
 		printf("   Yacc: insert output \"%s\"\n", $2);
-		Command::_currentCommand._outFile = $2;
+		Command::_currentCommand._errFile = $2;
 		//for simplicity we will use the append flag. append=1 for &>> operation
 		Command::_currentCommand._append = 1;
 		Command::_currentCommand._appback = 1;
 	}
-	| /* can be empty */ 
+	| /* can be empty */
 	;
 
 %%

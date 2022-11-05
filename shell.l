@@ -22,7 +22,14 @@
 
 [ \t] 	{
 		/* Discard spaces and tabs */
-     	}	
+     	}
+">&"    {
+        return ANDGREAT;
+        }
+
+">>&" {
+        return ANDGREATER;
+      }
 
 ">" 	{
 		return GREAT;
@@ -43,15 +50,9 @@
 "<"	{
 		return SMALL;
 }
-">&" {
-		return ANDGREAT;
-}
 
-">>&" {
-		return ANDGREATER;
-}
 
-[^ \t\n][^ \t\n]*  {
+[^ ><&\|\t\n][^ ><&\|\t\n]*  {
 		/* Assume that file names have only alpha chars */
 		yylval.string_val = strdup(yytext);
 		return WORD;
