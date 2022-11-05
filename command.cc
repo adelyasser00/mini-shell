@@ -321,6 +321,7 @@ Command::execute() {
 
 void
 Command::prompt() {
+    signal(SIGINT, SIG_IGN);
     char cwd[256];
     getcwd(cwd, 256);
     printf("myshell>%s ", cwd);
