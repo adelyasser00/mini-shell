@@ -2,6 +2,8 @@
 #ifndef command_h
 #define command_h
 
+
+
 // Command Data Structure
 struct SimpleCommand {
 	// Available space for arguments currently preallocated
