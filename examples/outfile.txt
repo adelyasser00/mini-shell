@@ -1,9 +1,0 @@
-total 100
--rwxrwxr-x 1 adelyasser00 adelyasser00 27784 أكت 29 22:13 cat_grep
--rw-rw-r-- 1 adelyasser00 adelyasser00  3414 أكت 29 21:43 cat_grep.cc
--rwxrwxr-x 1 adelyasser00 adelyasser00 27896 أكت 29 22:13 cat_grep_output
--rw-rw-r-- 1 adelyasser00 adelyasser00  3885 أكت 29 21:43 cat_grep_output.cc
--rwxrwxr-x 1 adelyasser00 adelyasser00 27648 أكت 29 22:13 ls_output
--rw-rw-r-- 1 adelyasser00 adelyasser00  2112 أكت 29 21:43 ls_output.cc
--rw-rw-r-- 1 adelyasser00 adelyasser00   335 أكت 29 21:43 Makefile
--rw-rw-r-- 1 adelyasser00 adelyasser00     0 أكت 29 22:18 outfile.txt
